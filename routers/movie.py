@@ -6,6 +6,7 @@ from typing import Optional, List
 from config.database import Session, engine, Base
 from models.movie import Movie as MovieModel
 from fastapi.encoders import jsonable_encoder
+from middlewares.jwt_bearer import JWTBearer
 #Schemas
 from schemas.movie import Movie
 #Router
@@ -40,7 +41,7 @@ def get_movies_by_category(category: str = Query(min_length=4, max_length=15)) -
     return JSONResponse(status_code=200, content=jsonable_encoder(result))
 
 
-@movie_router.post('/movies', tags=['movies'], response_model=dict, status_code=201)
+@movie_router.post('/movies', tags=['movies'], response_model=dict, status_code=201,dependencies=[Depends(JWTBearer())])
 def create_movie(movie: Movie) -> dict:
     db = Session()
     MovieService(db).create_movie(movie)
@@ -58,7 +59,7 @@ def update_movie(id: int, movie: Movie)-> dict:
     return JSONResponse(status_code=200, content={"message": "Se ha modificado la película"})
 
 
-@movie_router.delete('/movies/{id}', tags=['movies'], response_model=dict, status_code=200)
+@movie_router.delete('/movies/{id}', tags=['movies'], response_model=dict, status_code=200, dependencies=[Depends(JWTBearer())])
 def delete_movie(id: int)-> dict:
     db = Session()
     result = MovieService(db).get_movie(id)
